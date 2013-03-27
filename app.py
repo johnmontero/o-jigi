@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 import os
 import sys
-sys.stdout = sys.stderr
 
 import cherrypy
 from controllers.root import RootController
