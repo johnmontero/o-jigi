@@ -5,7 +5,7 @@ from subprocess import PIPE
 
 import cherrypy
 
-DISPATCH_PATH = '/srv/www/ojigi/cmds/'
+DISPATCH_PATH = '/var/www/o-jigi/cmds/'
 
 # Engine Supported
 engines_supported = ['github', 'bitbucket']
