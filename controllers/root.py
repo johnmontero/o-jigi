@@ -3,6 +3,8 @@
 import json
 import cherrypy
 
+from libs.utils import Dispatch
+
 
 class RootController(object):
 
@@ -11,7 +13,12 @@ class RootController(object):
         return "o-jigi"
 
     @cherrypy.expose
-    def api(self, payload):
-        payload = json.loads(payload)
-        branch = payload["commits"][0]['branch']
-        return branch
+    @cherrypy.tools.json_out()
+    def default(self,*args, **kwargs):
+
+        if cherrypy.request.method == "POST":
+            path = "".join(args)
+            payload = json.loads(kwargs["payload"])
+
+            dispatch = Dispatch(path.lower(), payload)
+            return dispatch.run()
