@@ -47,7 +47,7 @@ class Dispatch(object):
                 cherrypy.log('DISPATCH Wrong execution: %s' % file_cmd)
                 return {'error': {'cmd': file_cmd, 'out': r.std_out, 'msj': r.std_err}}
             cherrypy.log('DISPATCH Successful Execution: %s' % file_cmd)
-            return {'Successful Execution': out}
+            return {'Successful Execution': r.std_out}
         else:
             cherrypy.log('DISPATCH File does not exist: %s' % file_cmd)
             return {'error': 'File does not exist: %s' % file_cmd}
