@@ -1,8 +1,5 @@
 import os
-
-from subprocess import Popen
-from subprocess import PIPE
-
+import envoy
 import cherrypy
 
 DISPATCH_PATH = '/var/www/o-jigi/cmds/'
@@ -45,12 +42,10 @@ class Dispatch(object):
         file_cmd = '%s%s/run_%s.sh' % (DISPATCH_PATH, self.name, self.branch)
         cherrypy.log('DISPATCH Executing: %s' % file_cmd)
         if os.path.isfile(file_cmd):
-            p = Popen([file_cmd], stdout=PIPE, stderr=PIPE)
-            p.wait()
-            out, err = p.communicate()
-            if p.returncode != 0:
+            r = envoy.run(file_cmd)
+            if r.status_code != 0:
                 cherrypy.log('DISPATCH Wrong execution: %s' % file_cmd)
-                return {'error': {'cmd': file_cmd, 'out': out, 'msj': err}}
+                return {'error': {'cmd': file_cmd, 'out': r.std_out, 'msj': r.std_err}}
             cherrypy.log('DISPATCH Successful Execution: %s' % file_cmd)
             return {'Successful Execution': out}
         else:
