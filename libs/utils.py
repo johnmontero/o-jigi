@@ -42,7 +42,7 @@ class Dispatch(object):
         return self.dispatch.name
 
     def run(self):
-        file_cmd = '%s%s/run_%s.sh' % (DISPATCH_PATH, self.name, self.branch)
+        file_cmd = '%s%s/run_%s.sh > output.log' % (DISPATCH_PATH, self.name, self.branch)
         cherrypy.log('DISPATCH Executing: %s' % file_cmd)
         if os.path.isfile(file_cmd):
             p = Popen([file_cmd], stdout=PIPE, stderr=PIPE)
