@@ -49,8 +49,10 @@ class Dispatch(object):
             p.wait()
             out, err = p.communicate()
             if p.returncode != 0:
+                p.terminate()
                 cherrypy.log('DISPATCH Wrong execution: %s' % file_cmd)
                 return {'error': {'cmd': file_cmd, 'out': out, 'msj': err}}
+            p.terminate()
             cherrypy.log('DISPATCH Successful Execution: %s' % file_cmd)
             return {'Successful Execution': out}
         else:
