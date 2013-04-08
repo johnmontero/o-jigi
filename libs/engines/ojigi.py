@@ -11,5 +11,5 @@ class Dispatch(object):
         return ''
 
     @property
-    def name(self):
+    def repository(self):
         return ''

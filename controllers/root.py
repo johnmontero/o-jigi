@@ -1,10 +1,12 @@
 # -*- coding: utf8 -*-
-
+import os
 import json
-import requests
 import cherrypy
 
 from libs.utils import Dispatch
+
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+CONFIG_FILE = CURRENT_DIR + "".join('/../conf/config.ini')
 
 
 class RootController(object):
@@ -13,30 +15,40 @@ class RootController(object):
     def index(self):
         return "o-jigi"
 
+
     @cherrypy.expose
-    #@cherrypy.tools.json_out()
     def default(self,*args, **kwargs):
 
         if cherrypy.request.method == "POST":
             path = "".join(args)
             payload = json.loads(kwargs["payload"])
 
-            dispatch = Dispatch(path.lower(), payload)
+            dispatch = Dispatch(path.lower(), payload, CONFIG_FILE)
+
+            script = "{0}{1}/{2}".format(dispatch.dispatch_path,
+                                         dispatch.repository,
+                                         dispatch.script_name)
+
+            cherrypy.log('DISPATCH Executing: {0}'.format(script))
             result = dispatch.run()
 
-            subject = u'Sincronización de %s' % dispatch.name
-
-            if'error' in result:
-                subject = 'Error: %s' % subject
-                msj = result['error']
+            if result['status_code'] == 0:
+                message = result['message']
+                cherrypy.log('DISPATCH Successful Execution: {0}'.format(script))
+            elif result['status_code'] == -1:
+                message = result['error']
+                cherrypy.log('DISPATCH {0}: {1}'.format(message, script))
             else:
-                msj = result['Successful Execution']
+                message = result['error']
+                cherrypy.log('DISPATCH Error: {0} - {1}'.format(result['status_code'],
+                                                                message))
 
-            return requests.post(
-                "https://api.mailgun.net/v2/grup.pe/messages",
-                auth=("api", "key-940bh9-k65ujwmo3os4yvui-fm7lbse5"),
-                data={"from": "mula2demo <mula2demo@grup.pe>",
-                      "to": ["jmonteroc@gmail.com"],
-                      "subject": subject,
-                      "text": "Repositorio: %s\nRama        :%s\n\n%s"\
-                              % (dispatch.name, dispatch.branch, msj)})
+            if len(dispatch.mails) > 0:
+                message = 'Repository: {0}\nBranch: {1}\nScript: {2}\n\n{3}' \
+                    .format(dispatch.repository,
+                            dispatch.branch, script, message)
+                cherrypy.log('DISPATCH Send mails')
+                dispatch.send_mails(message)
+
+            return "Received: repository {0} of the branch {1}".\
+                format(dispatch.repository, dispatch.branch)
